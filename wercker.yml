@@ -1,0 +1,131 @@
+# This references the default golang container from
+# the Docker Hub: https://registry.hub.docker.com/u/library/golang/
+# If you want Google's container you would reference google/golang
+# Read more about containers on our dev center
+# http://devcenter.wercker.com/docs/containers/index.html
+box: golang
+    # - postgres
+    # http://devcenter.wercker.com/docs/services/postgresql.html
+
+    # - mongo
+    # http://devcenter.wercker.com/docs/services/mongodb.html
+build:
+  # The steps that will be executed on build
+  # Steps make up the actions in your pipeline
+  # Read more about steps on our dev center:
+  # http://devcenter.wercker.com/docs/steps/index.html
+  steps:
+    # - setup-go-workspace:
+    #    package-dir: github.com/shihchang/hello
+    # Build the project
+    - script:
+        name: go build -o hello
+        code: |
+          ls
+          go build -o hello
+          pwd
+          ls
+    - script:
+        name: step 1
+        code: |
+          echo '-------- WERCKER_REPORT_DIR: -----------------'
+          mkdir $WERCKER_REPORT_DIR
+          echo $WERCKER_REPORT_DIR
+          ls -l $WERCKER_REPORT_DIR
+          echo '-------- WERCKER_REPORT_ARTIFACTS_DIR: -------'
+          echo $WERCKER_REPORT_ARTIFACTS_DIR
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR
+          cp ./hello $WERCKER_REPORT_DIR
+          echo "hello!!" > step1InReportDir1.txt
+          cp step1InReportDir1.txt $WERCKER_REPORT_DIR
+          echo "nihow!!" > step1InArtifDir1.txt
+          cp step1InArtifDir1.txt $WERCKER_REPORT_ARTIFACTS_DIR
+          cp -r $WERCKER_REPORT_DIR $WERCKER_REPORT_ARTIFACTS_DIR
+          echo $WERCKER_REPORT_DIR
+          echo $WERCKER_REPORT_ARTIFACTS_DIR
+          ls -l $WERCKER_REPORT_DIR
+          ls -l /pipeline/
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR/report
+          echo '-------- WERCKER_REPORT_DIR: -----------------'
+          echo $WERCKER_REPORT_DIR
+          ls -l $WERCKER_REPORT_DIR
+          echo '-------- WERCKER_REPORT_ARTIFACTS_DIR: -------'
+          echo $WERCKER_REPORT_ARTIFACTS_DIR
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR
+          echo '-------- /pipeline/: -------'
+          ls -l /pipeline/
+          echo '-------- WERCKER_REPORT_ARTIFACTS_DIR/report: -------'
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR/report
+    - script:
+        name: dump WERCKER_REPORT_DIR to WERCKER_REPORT_ARTIFACTS_DIR
+        code: |
+          echo '-------- WERCKER_REPORT_DIR: -----------------'
+          # mkdir $WERCKER_REPORT_DIR
+          echo $WERCKER_REPORT_DIR
+          ls -l $WERCKER_REPORT_DIR
+          echo '-------- WERCKER_REPORT_ARTIFACTS_DIR: -------'
+          echo $WERCKER_REPORT_ARTIFACTS_DIR
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR
+          cp ./hello $WERCKER_REPORT_DIR
+          echo "hello!!" > fooInReportDir1.txt
+          echo "hello!!" > fooInReportDir2.txt
+          cp fooInReportDir1.txt $WERCKER_REPORT_DIR
+          cp fooInReportDir2.txt $WERCKER_REPORT_DIR
+          echo "nihow!!" > fooInArtifDir1.txt
+          echo "nihow!!" > fooInArtifDir2.txt
+          cp fooInArtifDir1.txt $WERCKER_REPORT_ARTIFACTS_DIR
+          cp fooInArtifDir2.txt $WERCKER_REPORT_ARTIFACTS_DIR
+          cp -r $WERCKER_REPORT_DIR $WERCKER_REPORT_ARTIFACTS_DIR
+          echo '-------- WERCKER_REPORT_DIR: -----------------'
+          echo $WERCKER_REPORT_DIR
+          ls -l $WERCKER_REPORT_DIR
+          echo '-------- WERCKER_REPORT_ARTIFACTS_DIR: -------'
+          echo $WERCKER_REPORT_ARTIFACTS_DIR
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR
+          echo '-------- /pipeline/: -------'
+          ls -l /pipeline/
+          echo '-------- WERCKER_REPORT_ARTIFACTS_DIR/report: -------'
+          ls -l $WERCKER_REPORT_ARTIFACTS_DIR/report
+        
+# http://devcenter.wercker.com/docs/creating-a-workflow-0-0
+deploy:
+  steps:
+    - script:
+      name: deploy step one
+      code: echo "Deploy Step 1"
+    - script:
+      name: deploy step two
+      code: echo "Deploy Step 2"
+    - script:
+      name: deploy step three
+      code: echo "Deploy Step 3"
+    - script:
+      name: deploy step four
+      code: echo "Deploy Step 4"
+
+test:
+    steps:
+        - script:
+            name: test 1
+            code: pwd
+        - script:
+            name: test 2
+            code: ./hello
+        - script:
+            name: test 3
+            code: echo "test Step 3"
+
+push-image:
+  box:
+    id: alpine
+    cmd: /bin/sh
+
+  steps:
+    - internal/docker-scratch-push:
+        repository: wcr.io/wercker/hello
+        tag: $WERCKER_GIT_BRANCH-$WERCKER_GIT_COMMIT
+        registry: https://wcr.io/v2
+        username: $WCR_USERNAME
+        password: $WCR_PASSWORD
+        cmd: ./hello
